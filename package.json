@@ -1,0 +1,22 @@
+{
+  "name": "yandex-music-downloader",
+  "version": "0.2.0",
+  "description": "",
+  "main": "build/src/index.js",
+  "scripts": {
+    "build": "tsc --build . & npx copyfiles -u 1 \"public/*\" \"public/**/*\" build",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "fix": "gts fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "15.12.4",
+    "copyfiles": "2.4.1",
+    "eslint": "7.29.0",
+    "gts": "3.1.0",
+    "typescript": "4.3.4"
+  }
+}

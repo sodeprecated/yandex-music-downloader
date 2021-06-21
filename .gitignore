@@ -1,0 +1,24 @@
+# Dependency directories
+node_modules
+
+# dotenv environment variables file
+.env
+.env.test
+
+# filesystem file
+.DS_Store
+
+# nyc test coverage
+.nyc_output
+
+# Coverage directory used by tools like istanbul
+coverage
+
+#build directory
+build
+
+# visual studio code settings
+.vscode
+
+# ts
+*.tsbuildinfo
