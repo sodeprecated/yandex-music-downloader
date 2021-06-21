@@ -276,7 +276,7 @@ export interface YandexMusicAPI {
 
   getTrackDownloadLink(trackId: number, albumId: number): Promise<string>;
 
-  downloadTrack(trackId: number, albumId: number): Promise<ArrayBuffer>;
+  downloadTrack(trackId: number, albumId: number): Promise<Buffer>;
 
-  downloadCover(coverUri: string, size: number): Promise<ArrayBuffer>;
+  downloadCover(coverUri: string, size: number): Promise<Buffer>;
 }
