@@ -14,22 +14,26 @@
     "downloads"
   ],
   "background": {
-    "scripts": ["src/index.js"],
+    "scripts": ["src/background/index.js"],
     "persistent": false
   },
   "content_scripts": [
     {
       "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"],
-      "js": [],
-      "css" : []
+      "js": ["src/content/index.js"],
+      "css" : ["style/main.css"]
     }
   ],
-  "web_accessible_resources": [],
+  "web_accessible_resources": [
+    "images/icon-dark.svg",
+    "images/icon-light.svg"
+  ],
   "externally_connectable": {
     "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"]
   },
   "browser_action": { 
-    "default_icon": "images/icon.png"
+    "default_icon": "images/inactive-icon.png",
+    "default_popup": "view/popup.html"
   },
   "icons":{
     "16":"images/logo/logo16.png",
