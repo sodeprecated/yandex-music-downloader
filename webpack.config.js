@@ -5,11 +5,13 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
 const config = {
   entry: {
-    index: path.join(__dirname, "src/index.ts"),
+    background: path.join(__dirname, "src/background/index.ts"),
+    content: path.join(__dirname, "src/content/index.ts"),
+    popup: path.join(__dirname, "src/popup/index.ts"),
   },
   output: {
     path: path.join(__dirname, "build"),
-    filename: "[name].js"
+    filename: "src/[name]/index.js"
   },
   devtool: 'inline-source-map',
   module: {

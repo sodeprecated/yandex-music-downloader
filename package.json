@@ -2,7 +2,7 @@
   "name": "yandex-music-downloader",
   "version": "0.2.0",
   "description": "",
-  "main": "build/src/index.js",
+  "main": "build/src/background/index.js",
   "scripts": {
     "build": "webpack --mode=production --node-env=production",
     "lint": "gts lint",
