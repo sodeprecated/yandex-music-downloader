@@ -14,6 +14,9 @@ const config = {
     filename: "src/[name]/index.js"
   },
   devtool: 'inline-source-map',
+  resolve: {
+    extensions: ['.js', '.ts']
+  },
   module: {
     rules: [
       {
