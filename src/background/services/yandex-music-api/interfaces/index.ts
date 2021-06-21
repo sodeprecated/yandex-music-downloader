@@ -241,3 +241,42 @@ export type Lyric = {
   readonly textLanguage: string /* e.g. 'ru', 'en' */;
   readonly showTranslation: boolean;
 };
+
+export interface YandexMusicAPI {
+  getTrack(
+    trackId: number,
+    albumId: number
+  ): Promise<{
+    readonly artists: Artist[];
+    readonly otherVersions: {[version: string]: Track[]};
+    readonly alsoInAlbums: Album[];
+    readonly similarTracks: Track[];
+    readonly track: Track;
+    readonly lyric: Lyric[];
+  }>;
+
+  getAlbum(albumId: number): Promise<Album>;
+
+  getArtist(artistId: number): Promise<{
+    readonly artist: Artist;
+    readonly similar: Artist[];
+    readonly allSimilar: Artist[];
+    readonly albums: Album[];
+    readonly alsoAlbums: Album[];
+    readonly tracks: Track[];
+    readonly playlistIds: {
+      readonly uid: number;
+      readonly kind: number;
+    }[];
+    readonly playlists: Playlist[];
+    readonly trackIds: number[];
+  }>;
+
+  getPlaylist(uid: number, kind: number): Promise<{playlist: Playlist}>;
+
+  getTrackDownloadLink(trackId: number, albumId: number): Promise<string>;
+
+  downloadTrack(trackId: number, albumId: number): Promise<ArrayBuffer>;
+
+  downloadCover(coverUri: string, size: number): Promise<ArrayBuffer>;
+}
