@@ -106,7 +106,6 @@ export type Track = {
       readonly volume: number;
       readonly index: number;
     };
-    readonly volumes: undefined;
   } & Album)[];
 
   /* <url>/%% instead '%%' paste image size e.g. 100x100 */
@@ -155,9 +154,7 @@ export type Album = {
 
   readonly bests: number[];
 
-  readonly volumes: ({
-    readonly albums: undefined;
-  } & Track)[];
+  readonly volumes: Track[];
 };
 
 export type Playlist = {

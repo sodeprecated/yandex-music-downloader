@@ -208,7 +208,9 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    * @reutrn buffer representation of track
    */
   async downloadTrack(trackId: number, albumId: number): Promise<Buffer> {
-    const url = new URL(await this.getTrackDownloadLink(trackId, albumId));
+    const url = new URL(
+      'https://' + (await this.getTrackDownloadLink(trackId, albumId))
+    );
     return await this.getBuffer(url.host, url.href);
   }
   /**
@@ -217,7 +219,7 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    * @return buffer representation of image
    */
   async downloadCover(coverUri: string, size: number): Promise<Buffer> {
-    const url = new URL(coverUri.replace('%%', `${size}x${size}`));
+    const url = new URL('https://' + coverUri.replace('%%', `${size}x${size}`));
     return await this.getBuffer(url.host, url.href);
   }
 }
