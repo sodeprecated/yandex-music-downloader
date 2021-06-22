@@ -73,6 +73,11 @@ type ArtistSocialLink = ArtistBaseLink & {
 
 type ArtistLink = ArtistOfficialLink | ArtistSocialLink;
 
+export type DownloadPartialCallback = (
+  totalBytes: number,
+  recievedBytes: number
+) => void;
+
 /* Main types */
 
 export type Track = {
@@ -273,7 +278,15 @@ export interface YandexMusicAPI {
 
   getTrackDownloadLink(trackId: number, albumId: number): Promise<string>;
 
-  downloadTrack(trackId: number, albumId: number): Promise<Buffer>;
+  downloadTrack(
+    trackId: number,
+    albumId: number,
+    partialCallback?: DownloadPartialCallback
+  ): Promise<Buffer>;
 
-  downloadCover(coverUri: string, size: number): Promise<Buffer>;
+  downloadCover(
+    coverUri: string,
+    size: number,
+    partialCallback?: DownloadPartialCallback
+  ): Promise<Buffer>;
 }

@@ -9,6 +9,7 @@ import {
   Playlist,
   Artist,
   Lyric,
+  DownloadPartialCallback,
   YandexMusicAPI as IYandexMusicAPI,
 } from './interfaces';
 
@@ -80,7 +81,11 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    * Does a GET request to specified host and path
    * @return binary buffer
    */
-  private async getBuffer(hostname: string, path: string): Promise<Buffer> {
+  private async getBuffer(
+    hostname: string,
+    path: string,
+    partialCallback?: DownloadPartialCallback
+  ): Promise<Buffer> {
     const options = {
       hostname: hostname,
       path: path,
@@ -90,9 +95,26 @@ export class YandexMusicAPI implements IYandexMusicAPI {
     return new Promise<Buffer>((resolve, reject) => {
       https.get(options, (res: IncomingMessage) => {
         const rawData: Buffer[] = [];
-        res.on('data', (chunk: Buffer) => rawData.push(chunk));
+
+        let currentChunkSize = 0;
+        const totalSize = +(res.headers['content-length'] || -1);
+
+        res.on('data', (chunk: Buffer) => {
+          rawData.push(chunk);
+          currentChunkSize += chunk.byteLength;
+
+          if (currentChunkSize >= 16384 && partialCallback) {
+            partialCallback(totalSize, currentChunkSize);
+            currentChunkSize = 0;
+          }
+        });
         res.on('error', reject);
-        res.on('end', () => resolve(Buffer.concat(rawData)));
+        res.on('end', () => {
+          if (currentChunkSize && partialCallback) {
+            partialCallback(totalSize, currentChunkSize);
+          }
+          resolve(Buffer.concat(rawData));
+        });
       });
     });
   }
@@ -207,19 +229,27 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    * Downloads track from yandex storage
    * @reutrn buffer representation of track
    */
-  async downloadTrack(trackId: number, albumId: number): Promise<Buffer> {
+  async downloadTrack(
+    trackId: number,
+    albumId: number,
+    partialCallback?: DownloadPartialCallback
+  ): Promise<Buffer> {
     const url = new URL(
       'https://' + (await this.getTrackDownloadLink(trackId, albumId))
     );
-    return await this.getBuffer(url.host, url.href);
+    return await this.getBuffer(url.host, url.href, partialCallback);
   }
   /**
    * Downloads cover with provided size from yandex storage
    * Not all cover sizes exist. Most common is 100,200,400
    * @return buffer representation of image
    */
-  async downloadCover(coverUri: string, size: number): Promise<Buffer> {
+  async downloadCover(
+    coverUri: string,
+    size: number,
+    partialCallback?: DownloadPartialCallback
+  ): Promise<Buffer> {
     const url = new URL('https://' + coverUri.replace('%%', `${size}x${size}`));
-    return await this.getBuffer(url.host, url.href);
+    return await this.getBuffer(url.host, url.href, partialCallback);
   }
 }
