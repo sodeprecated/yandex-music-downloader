@@ -5,7 +5,8 @@ export type UserSettingsFields =
   | 'downloadAlbumsInSeparateFolder'
   | 'downloadPlaylistsInSeparateFolder'
   | 'downloadArtistsInSeparateFolder'
-  | 'maxQueueSize';
+  | 'maxQueueSize'
+  | 'concurrency';
 
 export interface UserSettings {
   coverSize: number;
@@ -15,4 +16,5 @@ export interface UserSettings {
   downloadPlaylistsInSeparateFolder: boolean;
   downloadArtistsInSeparateFolder: boolean;
   maxQueueSize: number;
+  concurrency: number;
 }

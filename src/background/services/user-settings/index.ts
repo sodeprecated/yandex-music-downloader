@@ -1,13 +1,36 @@
 import {UserSettings as IUserSettings} from './interfaces';
 
 export class UserSettings implements IUserSettings {
+  /** Size of song cover */
   coverSize = 200;
+  /**
+   * Filename format. In curly brackets variables.
+   * {title} - song title
+   * {artist} - artist named
+   * {album} - album title
+   */
   filenameFormat = '{artist}-{title}';
+  /** Download path relative to chrome's default download path*/
   downloadPath = '/';
+  /**
+   * If true, when downloading album,
+   * all songs will be saved to separate folder
+   */
   downloadAlbumsInSeparateFolder = true;
+  /**
+   * If true, when downloading playlist,
+   * all songs will be saved to separate folder
+   */
   downloadPlaylistsInSeparateFolder = true;
+  /**
+   * If true, when downloading artist's song,
+   * all songs will be saved to separate folder
+   */
   downloadArtistsInSeparateFolder = true;
+  /** Max amount of download items waiting for download. -1 for no limit */
   maxQueueSize = -1;
+  /** Number of download items at the same time */
+  concurrency = 1 /* sequential download */;
 
   constructor() {
     if (!chrome) return; // for test
@@ -28,7 +51,7 @@ export class UserSettings implements IUserSettings {
     });
     /**
      * Listen for any changes to the state of storage.
-     * Update local settings.
+     * Update local settings
      */
     chrome.storage.onChanged.addListener(changes => {
       this.coverSize = changes.coverSize.newValue ?? this.coverSize;
@@ -48,6 +71,10 @@ export class UserSettings implements IUserSettings {
     });
   }
 
+  /**
+   * Save current state of user settings.
+   * Should be called every time something changes
+   */
   save(): void {
     if (!chrome) return; // for tests
     chrome.storage.sync.set(this);
