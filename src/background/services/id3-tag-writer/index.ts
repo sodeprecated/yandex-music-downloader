@@ -20,6 +20,14 @@ export class TrackID3TagWriter {
     return this;
   }
   /**
+   * Sets song version.
+   * e.g. remastered, cover, acoustic etc.
+   */
+  setVersion(version: string): this {
+    this.id3Writer_.setFrame('TIT3', version);
+    return this;
+  }
+  /**
    * Sets song language.
    * Language must be coded following the ISO 639-2 standards
    */
@@ -95,6 +103,15 @@ export class TrackID3TagWriter {
     if (album.title) this.id3Writer_.setFrame('TALB', album.title);
     if (album.artist) this.id3Writer_.setFrame('TPE2', album.artist);
     if (album.year) this.id3Writer_.setFrame('TYER', album.year);
+    return this;
+  }
+  /**
+   * Sets track position in specific album or playlist.
+   * For album its 'track.album[0].trackPosition.index'.
+   * For playlist its 'playlist.trackIds.indexOf(+track.id)'
+   */
+  setPositionInAlbum(position: number): this {
+    this.id3Writer_.setFrame('TRCK', position.toString());
     return this;
   }
   /**
