@@ -159,12 +159,17 @@ export class DownloadManager implements IDownloadManager {
   /**
    * NOT IMPLEMENTED
    *
-   * Removes download item from queue. Stops downloading.
+   * Stops downloading.
    * @return true if successeed
    */
-  interrupt(_downloadItemId: number): boolean {
+  interrupt(_downloadItemId: number) {
     throw new Error('Not implemented');
-    return true;
+  }
+  /**
+   * Removes item from queue.
+   */
+  remove(downloadItemId: number) {
+    this.queueRemove_(downloadItemId);
   }
   /**
    * Proceeds queue execution.
@@ -179,6 +184,15 @@ export class DownloadManager implements IDownloadManager {
    */
   stop(): void {
     this.queuePaused_ = true;
+  }
+  /**
+   * Clears the queue. Removes from queue all elements that
+   * are not being downloaded.
+   */
+  clear(): void {
+    this.downloadQueue_ = this.downloadQueue_.filter(
+      item => item.state !== DownloadItemState.PENDING
+    );
   }
   /**
    * @return current size of queue

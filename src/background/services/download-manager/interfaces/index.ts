@@ -41,10 +41,14 @@ export interface DownloadManager {
     downloadPath?: string
   ): DownloadItem;
   /**
-   * Removes download item from queue. Stops downloading.
+   * Stops downloading.
    * @return true if successeed
    */
-  interrupt(downloadItemId: number): boolean;
+  interrupt(downloadItemId: number): void;
+  /**
+   * Removes item from queue.
+   */
+  remove(downloadItemId: number): void;
   /**
    * Proceeds queue execution.
    */
@@ -54,6 +58,11 @@ export interface DownloadManager {
    * Only prevent new ones from being downloaded.
    */
   stop(): void;
+  /**
+   * Clears the queue. Removes from queue all elements that
+   * are not being downloaded.
+   */
+  clear(): void;
   /**
    * @return current size of queue
    */
