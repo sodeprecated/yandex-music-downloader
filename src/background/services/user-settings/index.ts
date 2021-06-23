@@ -2,16 +2,16 @@ import {UserSettings as IUserSettings} from './interfaces';
 
 export class UserSettings implements IUserSettings {
   /** Size of song cover */
-  coverSize = 200;
+  coverSize = 300;
   /**
    * Filename format. In curly brackets variables.
    * {title} - song title
-   * {artist} - artist named
+   * {artist} - artist name
    * {album} - album title
    */
-  filenameFormat = '{artist}-{title}';
+  filenameFormat = '{artist} {title}';
   /** Download path relative to chrome's default download path*/
-  downloadPath = '/';
+  downloadPath = './';
   /**
    * If true, when downloading album,
    * all songs will be saved to separate folder
@@ -30,7 +30,7 @@ export class UserSettings implements IUserSettings {
   /** Max amount of download items waiting for download. -1 for no limit */
   maxQueueSize = -1;
   /** Number of download items at the same time */
-  concurrency = 1 /* sequential download */;
+  concurrency = 4 /* sequential download */;
 
   constructor() {
     if (!chrome) return; // for test
