@@ -70,7 +70,7 @@ const config = {
       patterns: [{ from: "public", to: "." }],
     }),
     new NodePolyfillPlugin({
-      excludeAliases: ["console", "Buffer"]
+      excludeAliases: ["console"]
     })
   ],
 };
