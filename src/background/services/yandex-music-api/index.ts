@@ -181,6 +181,6 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    * @return link to covers
    */
   async getCoverDownloadLink(coverUri: string, size: number): Promise<string> {
-    return 'https://' + coverUri.replace('%%', `${size}x${size}`);
+    return 'https://' + coverUri.slice(0, -2) + `${size}x${size}`;
   }
 }
