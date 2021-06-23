@@ -11,7 +11,7 @@ const config = {
   },
   output: {
     path: path.join(__dirname, "build"),
-    filename: "src/[name]/index.js"
+    filename: "[name].js"
   },
   devtool: 'inline-source-map',
   resolve: {

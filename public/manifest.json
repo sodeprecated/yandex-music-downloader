@@ -4,34 +4,37 @@
   "author": "Daniil Zhdanovich",
   "description": "Загружай любимые треки без ограничений, с новым расширением для Yandex Music!",
   "permissions": [
-    "https://music.yandex.by/*",
-    "https://music.yandex.ru/*",
-    "https://music.yandex.ua/*",
-    "https://music.yandex.kz/*",
-    "https://music.yandex.com/*",
-    "https://storage.mds.yandex.net/*",
-    "https://avatars.yandex.net/*",
-    "downloads"
+    "downloads",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://music.yandex.by/*",
+    "*://music.yandex.ru/*",
+    "*://music.yandex.ua/*",
+    "*://music.yandex.kz/*",
+    "*://music.yandex.com/*",
+    "*://music.yandex.net/*",
+    "*://storage.mds.yandex.net/*",
+    "*://*.storage.yandex.net/*",
+    "*://avatars.yandex.net/*"
   ],
   "background": {
-    "scripts": ["src/background/index.js"],
-    "persistent": false
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"],
-      "js": ["src/content/index.js"],
-      "css" : ["style/main.css"]
+      "js": ["content.js"]
     }
   ],
-  "web_accessible_resources": [
-    "images/icon-dark.svg",
-    "images/icon-light.svg"
-  ],
+  "web_accessible_resources": [{
+    "resources": ["images/icon-dark.svg", "images/icon-light.svg"],
+    "matches": ["*://*/*"]
+  }],
   "externally_connectable": {
     "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"]
   },
-  "browser_action": { 
+  "action": { 
     "default_icon": "images/inactive-icon.png",
     "default_popup": "view/popup.html"
   },
@@ -42,5 +45,5 @@
     "48":"images/logo/logo48.png",
     "128":"images/logo/logo128.png"
   },
-  "manifest_version": 2
+  "manifest_version": 3
 }
