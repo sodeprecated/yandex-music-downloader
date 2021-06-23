@@ -131,7 +131,10 @@ export class YandexMusicAPI implements IYandexMusicAPI {
   /**
    * @return playlist info from '/handlers/playlist.jsx'
    */
-  async getPlaylist(uid: number, kind: number): Promise<{playlist: Playlist}> {
+  async getPlaylist(
+    uid: number | string,
+    kind: number
+  ): Promise<{playlist: Playlist}> {
     return await this.getObject(
       `${this.getHostname()}/handlers/playlist.jsx?owner=${uid}&kinds=${kind}`
     );
