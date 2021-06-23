@@ -115,6 +115,13 @@ export class TrackID3TagWriter {
     return this;
   }
   /**
+   * Sets disk index of the song's album
+   */
+  setVolume(volume: number): this {
+    this.id3Writer_.setFrame('TPOS', volume.toString());
+    return this;
+  }
+  /**
    * @return track in buffer format. Buffer will share the
    * same allocated space as the buffer provided in constructor.
    */
