@@ -34,49 +34,60 @@ export class UserSettings implements IUserSettings {
 
   constructor() {
     if (!chrome) return; // for test
-    chrome.storage.sync.get(Object.keys(this), items => {
-      this.coverSize = items.coverSize ?? this.coverSize;
-      this.filenameFormat = items.filenameFormat ?? this.filenameFormat;
-      this.downloadPath = items.downloadPath ?? this.downloadPath;
-      this.downloadAlbumsInSeparateFolder =
-        items.downloadAlbumsInSeparateFolder ??
-        this.downloadAlbumsInSeparateFolder;
-      this.downloadArtistsInSeparateFolder =
-        items.downloadArtistsInSeparateFolder ??
-        this.downloadArtistsInSeparateFolder;
-      this.downloadPlaylistsInSeparateFolder =
-        items.downloadPlaylistsInSeparateFolder ??
-        this.downloadPlaylistsInSeparateFolder;
-      this.maxQueueSize = items.maxQueueSize ?? this.maxQueueSize;
-    });
     /**
      * Listen for any changes to the state of storage.
      * Update local settings
      */
     chrome.storage.onChanged.addListener(changes => {
-      this.coverSize = changes.coverSize.newValue ?? this.coverSize;
+      this.coverSize = changes.coverSize?.newValue ?? this.coverSize;
       this.filenameFormat =
-        changes.filenameFormat.newValue ?? this.filenameFormat;
-      this.downloadPath = changes.downloadPath.newValue ?? this.downloadPath;
+        changes.filenameFormat?.newValue ?? this.filenameFormat;
+      this.downloadPath = changes.downloadPath?.newValue ?? this.downloadPath;
       this.downloadAlbumsInSeparateFolder =
-        changes.downloadAlbumsInSeparateFolder.newValue ??
+        changes.downloadAlbumsInSeparateFolder?.newValue ??
         this.downloadAlbumsInSeparateFolder;
       this.downloadArtistsInSeparateFolder =
-        changes.downloadArtistsInSeparateFolder.newValue ??
+        changes.downloadArtistsInSeparateFolder?.newValue ??
         this.downloadArtistsInSeparateFolder;
       this.downloadPlaylistsInSeparateFolder =
-        changes.downloadPlaylistsInSeparateFolder.newValue ??
+        changes.downloadPlaylistsInSeparateFolder?.newValue ??
         this.downloadPlaylistsInSeparateFolder;
-      this.maxQueueSize = changes.maxQueueSize.newValue ?? this.maxQueueSize;
+      this.maxQueueSize = changes.maxQueueSize?.newValue ?? this.maxQueueSize;
+      this.concurrency = changes.concurrency?.newValue ?? this.concurrency;
     });
   }
-
+  /**
+   * Loads user settings from chrome storage
+   */
+  async load(): Promise<void> {
+    if (!chrome) return; // for tests
+    return new Promise<void>(resolve => {
+      chrome.storage.sync.get(Object.keys(this), items => {
+        this.coverSize = items.coverSize ?? this.coverSize;
+        this.filenameFormat = items.filenameFormat ?? this.filenameFormat;
+        this.downloadPath = items.downloadPath ?? this.downloadPath;
+        this.downloadAlbumsInSeparateFolder =
+          items.downloadAlbumsInSeparateFolder ??
+          this.downloadAlbumsInSeparateFolder;
+        this.downloadArtistsInSeparateFolder =
+          items.downloadArtistsInSeparateFolder ??
+          this.downloadArtistsInSeparateFolder;
+        this.downloadPlaylistsInSeparateFolder =
+          items.downloadPlaylistsInSeparateFolder ??
+          this.downloadPlaylistsInSeparateFolder;
+        this.maxQueueSize = items.maxQueueSize ?? this.maxQueueSize;
+        resolve();
+      });
+    });
+  }
   /**
    * Save current state of user settings.
    * Should be called every time something changes
    */
-  save(): void {
+  async save(): Promise<void> {
     if (!chrome) return; // for tests
-    chrome.storage.sync.set(this);
+    return new Promise<void>(resolve => {
+      chrome.storage.sync.set(this, resolve);
+    });
   }
 }
