@@ -223,7 +223,11 @@ export class DownloadManager implements IDownloadManager {
    */
   private async emit_(type: HookType, item: DownloadItem) {
     for await (const listener of this.listeners_[type]) {
-      await listener(item);
+      try {
+        await listener(item);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }
   /**
@@ -231,7 +235,11 @@ export class DownloadManager implements IDownloadManager {
    */
   private async emitError_(item: DownloadItem, err: Error) {
     for await (const errorListener of this.errorListeners_) {
-      await errorListener(item, err);
+      try {
+        await errorListener(item, err);
+      } catch (err) {
+        console.error(err);
+      }
     }
   }
 
