@@ -122,4 +122,17 @@ export class TrackID3TagWriter {
     this.id3Writer_.addTag();
     return Buffer.from(this.id3Writer_.arrayBuffer);
   }
+  /**
+   * Creates local url of file
+   */
+  getUrl(): string {
+    this.id3Writer_.addTag();
+    return this.id3Writer_.getURL();
+  }
+  /**
+   * Revokes url that was created earlier
+   */
+  revokeUrl(): void {
+    this.id3Writer_.revokeURL();
+  }
 }
