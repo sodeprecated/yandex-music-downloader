@@ -1,6 +1,5 @@
 import https from 'https';
 import {IncomingMessage} from 'http';
-import {URL} from 'url';
 import md5 from 'md5';
 
 import {
@@ -47,34 +46,29 @@ export class YandexMusicAPI implements IYandexMusicAPI {
     return `music.yandex.${this.locale_}`;
   }
   /**
-   * Does a GET request to specified host and path
-   * @return result of request in format of string
+   * Does a GET request to specified path
+   * @return parsed json casted to provided type
    */
-  private async getString(hostname: string, path: string): Promise<string> {
+  private async getObject<T>(path: string): Promise<T> {
     const options = {
-      hostname: hostname,
-      path: path,
-      headers: this.headers_,
+      path: 'https://' + path,
+      headers: {
+        ...this.headers_,
+        Accept: 'application/json',
+      },
     };
 
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<T>((resolve, reject) => {
       https
         .get(options, (res: IncomingMessage) => {
           let rawData = '';
           res.setEncoding('utf8');
           res.on('data', (chunk: string) => (rawData += chunk || ''));
           res.on('error', reject);
-          res.on('end', () => resolve(rawData));
+          res.on('end', () => resolve(JSON.parse(rawData)));
         })
         .on('error', reject);
     });
-  }
-  /**
-   * Does a GET request to specified host and path
-   * @return parsed json casted to provided type
-   */
-  private async getObject<T>(hostname: string, path: string): Promise<T> {
-    return JSON.parse(await this.getString(hostname, path)) as T;
   }
   /**
    * Creates new instance of YandexMusicAPI with specified locale
@@ -86,6 +80,8 @@ export class YandexMusicAPI implements IYandexMusicAPI {
       'X-Retpath-Y': encodeURI(`https://${this.getHostname()}/`),
       Connection: 'keep-alive',
       Accept: '*/*',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': 'origin, content-type, accept',
     };
   }
   /**
@@ -100,8 +96,7 @@ export class YandexMusicAPI implements IYandexMusicAPI {
     readonly lyric: Lyric[];
   }> {
     return await this.getObject(
-      this.getHostname(),
-      `/handlers/track.jsx?track=${trackId}`
+      `${this.getHostname()}/handlers/track.jsx?track=${trackId}`
     );
   }
   /**
@@ -109,8 +104,7 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    */
   async getAlbum(albumId: number): Promise<Album> {
     return await this.getObject(
-      this.getHostname(),
-      `/handlers/album.jsx?album=${albumId}`
+      `${this.getHostname()}/handlers/album.jsx?album=${albumId}`
     );
   }
   /**
@@ -131,8 +125,7 @@ export class YandexMusicAPI implements IYandexMusicAPI {
     readonly trackIds: number[];
   }> {
     return await this.getObject(
-      this.getHostname(),
-      `/handlers/artist.jsx?artist=${artistId}`
+      `${this.getHostname()}/handlers/artist.jsx?artist=${artistId}`
     );
   }
   /**
@@ -140,8 +133,7 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    */
   async getPlaylist(uid: number, kind: number): Promise<{playlist: Playlist}> {
     return await this.getObject(
-      this.getHostname(),
-      `/handlers/playlist.jsx?owner=${uid}&kinds=${kind}`
+      `${this.getHostname()}/handlers/playlist.jsx?owner=${uid}&kinds=${kind}`
     );
   }
   /**
@@ -155,15 +147,11 @@ export class YandexMusicAPI implements IYandexMusicAPI {
       `overembed=no&__t=${Date.now()}`;
 
     const trackDownloadInfo = await this.getObject<TrackDownloadInfo>(
-      this.getHostname(),
-      trackDownloadApiPath
+      this.getHostname() + trackDownloadApiPath
     );
 
-    const fileDownloadInfoUrl = new URL(`https:${trackDownloadInfo.src}`);
-
     const fileDownloadInfo = await this.getObject<FileDownloadInfo>(
-      fileDownloadInfoUrl.hostname,
-      `${fileDownloadInfoUrl.href}&format=json`
+      trackDownloadInfo.src.slice(2) + '&format=json'
     );
 
     const hasht = md5(

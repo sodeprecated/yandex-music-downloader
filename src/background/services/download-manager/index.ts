@@ -1,9 +1,6 @@
 import https from 'https';
 import {IncomingMessage} from 'http';
 
-import {URL} from 'url';
-import {performance} from 'perf_hooks';
-
 import {
   DownloadItem,
   DownloadManager as IDownloadManager,
@@ -28,13 +25,12 @@ export class DownloadManager implements IDownloadManager {
     uri: string,
     callback: DownloadPartialCallback
   ) {
-    const {host, href} = new URL(uri);
     const options = {
-      hostname: host,
-      path: href,
+      path: uri,
       headers: {
         Connection: 'keep-alive',
         Accept: '*/*',
+        'Access-Control-Allow-Headers': 'origin, content-type, accept',
       },
     };
 
@@ -89,7 +85,7 @@ export class DownloadManager implements IDownloadManager {
 
     this.inProgressSize_++;
 
-    downloadItem.startMs = performance.now();
+    downloadItem.startMs = Date.now();
     downloadItem.state = DownloadItemState.IN_PROGRESS;
 
     /* EMIT state change */
@@ -155,6 +151,8 @@ export class DownloadManager implements IDownloadManager {
     this.downloadQueue_.push(downloadItem);
 
     this.emit_('add', downloadItem);
+
+    this.queueProcessNext_();
 
     return downloadItem;
   }
