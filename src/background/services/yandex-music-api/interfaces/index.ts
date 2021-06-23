@@ -113,7 +113,7 @@ export type Track = {
   } & Album)[];
 
   /* <url>/%% instead '%%' paste image size e.g. 100x100 */
-  readonly coverUri: string;
+  readonly coverUri?: string;
   readonly ogImage: string;
 
   readonly lyricsAvailable: boolean;
@@ -159,7 +159,7 @@ export type Album = {
 
   readonly bests: number[];
 
-  readonly volumes: Track[];
+  readonly volumes: Track[][];
 };
 
 export type Playlist = {
