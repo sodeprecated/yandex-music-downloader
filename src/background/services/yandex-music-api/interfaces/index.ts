@@ -73,11 +73,6 @@ type ArtistSocialLink = ArtistBaseLink & {
 
 type ArtistLink = ArtistOfficialLink | ArtistSocialLink;
 
-export type DownloadPartialCallback = (
-  totalBytes: number,
-  recievedBytes: number
-) => void;
-
 /* Main types */
 
 export type Track = {
@@ -101,6 +96,10 @@ export type Track = {
     readonly gain: number /* float */;
     readonly peek: number /* float */;
   };
+  readonly r128?: {
+    i: number /* float */;
+    tp: number /* float */;
+  };
   readonly previewDurationMs: number;
   readonly artists: Pick<
     Artist,
@@ -122,6 +121,7 @@ export type Track = {
 
   readonly rememberPosition: boolean;
   readonly trackSharingFlag: 'VIDEO_ALLOWED' /* TODO: check for other flags */;
+  readonly backgroundVideoUri?: string /* short video preview */;
   readonly batchId: string;
 };
 
@@ -245,10 +245,7 @@ export type Lyric = {
 };
 
 export interface YandexMusicAPI {
-  getTrack(
-    trackId: number,
-    albumId: number
-  ): Promise<{
+  getTrack(trackId: number): Promise<{
     readonly artists: Artist[];
     readonly otherVersions: {[version: string]: Track[]};
     readonly alsoInAlbums: Album[];
@@ -276,17 +273,6 @@ export interface YandexMusicAPI {
 
   getPlaylist(uid: number, kind: number): Promise<{playlist: Playlist}>;
 
-  getTrackDownloadLink(trackId: number, albumId: number): Promise<string>;
-
-  downloadTrack(
-    trackId: number,
-    albumId: number,
-    partialCallback?: DownloadPartialCallback
-  ): Promise<Buffer>;
-
-  downloadCover(
-    coverUri: string,
-    size: number,
-    partialCallback?: DownloadPartialCallback
-  ): Promise<Buffer>;
+  getTrackDownloadLink(trackId: number): Promise<string>;
+  getCoverDownloadLink(coverUri: string, size: number): Promise<string>;
 }

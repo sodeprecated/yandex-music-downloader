@@ -9,7 +9,6 @@ import {
   Playlist,
   Artist,
   Lyric,
-  DownloadPartialCallback,
   YandexMusicAPI as IYandexMusicAPI,
 } from './interfaces';
 
@@ -78,47 +77,6 @@ export class YandexMusicAPI implements IYandexMusicAPI {
     return JSON.parse(await this.getString(hostname, path)) as T;
   }
   /**
-   * Does a GET request to specified host and path
-   * @return binary buffer
-   */
-  private async getBuffer(
-    hostname: string,
-    path: string,
-    partialCallback?: DownloadPartialCallback
-  ): Promise<Buffer> {
-    const options = {
-      hostname: hostname,
-      path: path,
-      headers: this.headers_,
-    };
-
-    return new Promise<Buffer>((resolve, reject) => {
-      https.get(options, (res: IncomingMessage) => {
-        const rawData: Buffer[] = [];
-
-        let currentChunkSize = 0;
-        const totalSize = +(res.headers['content-length'] || -1);
-
-        res.on('data', (chunk: Buffer) => {
-          rawData.push(chunk);
-          currentChunkSize += chunk.byteLength;
-
-          if (currentChunkSize >= 16384 && partialCallback) {
-            partialCallback(totalSize, currentChunkSize);
-            currentChunkSize = 0;
-          }
-        });
-        res.on('error', reject);
-        res.on('end', () => {
-          if (currentChunkSize && partialCallback) {
-            partialCallback(totalSize, currentChunkSize);
-          }
-          resolve(Buffer.concat(rawData));
-        });
-      });
-    });
-  }
-  /**
    * Creates new instance of YandexMusicAPI with specified locale
    * @example new YandexMusicAPI('by')
    */
@@ -133,10 +91,7 @@ export class YandexMusicAPI implements IYandexMusicAPI {
   /**
    * @return track info from '/handlers/track.jsx'
    */
-  async getTrack(
-    trackId: number,
-    albumId: number
-  ): Promise<{
+  async getTrack(trackId: number): Promise<{
     readonly artists: Artist[];
     readonly otherVersions: {[version: string]: Track[]};
     readonly alsoInAlbums: Album[];
@@ -146,7 +101,7 @@ export class YandexMusicAPI implements IYandexMusicAPI {
   }> {
     return await this.getObject(
       this.getHostname(),
-      `/handlers/track.jsx?track=${trackId}:${albumId}`
+      `/handlers/track.jsx?track=${trackId}`
     );
   }
   /**
@@ -192,12 +147,9 @@ export class YandexMusicAPI implements IYandexMusicAPI {
   /**
    * @return link to track's mp3 file
    */
-  async getTrackDownloadLink(
-    trackId: number,
-    albumId: number
-  ): Promise<string> {
+  async getTrackDownloadLink(trackId: number): Promise<string> {
     const trackDownloadApiPath =
-      `/api/v2.1/handlers/track/${trackId}:${albumId}/` +
+      `/api/v2.1/handlers/track/${trackId}/` +
       'web-album-track-track-main/download/m?' +
       `hq=1&external-domain=${this.getHostname()}&` +
       `overembed=no&__t=${Date.now()}`;
@@ -223,33 +175,12 @@ export class YandexMusicAPI implements IYandexMusicAPI {
       `/get-mp3/${hasht}/${fileDownloadInfo.ts}` +
       `${fileDownloadInfo.path}?track-id=${trackId}`;
 
-    return fileDownloadInfo.host + path;
+    return 'https://' + fileDownloadInfo.host + path;
   }
   /**
-   * Downloads track from yandex storage
-   * @reutrn buffer representation of track
+   * @return link to covers
    */
-  async downloadTrack(
-    trackId: number,
-    albumId: number,
-    partialCallback?: DownloadPartialCallback
-  ): Promise<Buffer> {
-    const url = new URL(
-      'https://' + (await this.getTrackDownloadLink(trackId, albumId))
-    );
-    return await this.getBuffer(url.host, url.href, partialCallback);
-  }
-  /**
-   * Downloads cover with provided size from yandex storage
-   * Not all cover sizes exist. Most common is 100,200,400
-   * @return buffer representation of image
-   */
-  async downloadCover(
-    coverUri: string,
-    size: number,
-    partialCallback?: DownloadPartialCallback
-  ): Promise<Buffer> {
-    const url = new URL('https://' + coverUri.replace('%%', `${size}x${size}`));
-    return await this.getBuffer(url.host, url.href, partialCallback);
+  async getCoverDownloadLink(coverUri: string, size: number): Promise<string> {
+    return 'https://' + coverUri.replace('%%', `${size}x${size}`);
   }
 }
