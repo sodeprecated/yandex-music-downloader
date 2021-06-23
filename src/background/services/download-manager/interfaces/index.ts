@@ -21,6 +21,8 @@ export type DownloadItem = {
   downloadedSize: number;
 
   startMs: number /* timestamp in ms */;
+
+  customData?: {[key: string]: number | string | boolean | Buffer};
 };
 
 export type HookType = 'add' | 'interrupted' | 'progress' | 'complete';

@@ -133,7 +133,8 @@ export class DownloadManager implements IDownloadManager {
     uri: string,
     name: string,
     filename: string,
-    downloadPath = ''
+    downloadPath = '',
+    customData?: {[key: string]: string | number | boolean | Buffer}
   ): DownloadItem {
     const downloadItem: DownloadItem = {
       id: this.lastId_++,
@@ -146,6 +147,7 @@ export class DownloadManager implements IDownloadManager {
       size: -1,
       downloadedSize: 0,
       startMs: -1 /* timestamp in ms */,
+      customData,
     };
 
     this.downloadQueue_.push(downloadItem);
