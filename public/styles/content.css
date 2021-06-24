@@ -1,0 +1,115 @@
+.YMD-icon{
+  background: 50% no-repeat;
+  background-size: 100%;
+  margin: 6px;
+  width: 28px;
+  height: 28px;
+
+  -webkit-box-flex: 0;
+  flex: 0 0 auto;
+  position: relative;
+}
+
+.player__YMD_icon {
+  display: inline-block;
+}
+
+.sidebar__YMD-button {
+  margin-left: 10px;
+}
+
+.d-track__sidebar:hover .d-track__actions .sidebar__track_YMD-icon {
+  display: inline-block;
+  visibility: visible;
+}
+
+.sidebar__track_YMD-icon {
+  margin: 0px;
+  margin-right: 16px;
+  display: none;
+  width: 24px;
+  height: 24px;
+  opacity: .4;
+  overflow: hidden;
+  vertical-align: top;
+  -webkit-transition: color .2s;
+  transition: color .2s;
+}
+
+.sidebar__track_YMD-icon:hover {
+  opacity: 1.0!important;
+}
+
+.sidebar__YMD-icon {
+  display: inline-block;
+  opacity: .45;
+
+  width: 24px;
+  height: 24px;
+
+  transition-property: opacity, transform, -webkit-transform;
+  transition-duration: 0.1s, 0.1s, 0.1s;
+  transition-timing-function: linear, linear, linear;
+  transition-delay: 0s, 0s, 0s;
+}
+
+.sidebar__YMD-button:hover .sidebar__YMD-icon {
+  opacity: .85!important;   
+}
+
+.page__YMD-icon {
+  display: inline-block;
+  opacity: .45;
+
+  width: 24px;
+  height: 24px;
+
+  transition-property: opacity, transform, -webkit-transform;
+  transition-duration: 0.1s, 0.1s, 0.1s;
+  transition-timing-function: linear, linear, linear;
+  transition-delay: 0s, 0s, 0s;
+}
+
+.page__YMD-button:hover .page__YMD-icon {
+  opacity: .85!important;   
+}
+
+.YMD-icon-dark{
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/icon-dark.svg');
+}
+.YMD-icon-light{
+  background-image: url('chrome-extension://__MSG_@@extension_id__/images/icon-light.svg');
+}
+
+.YMD-icon-light.sidebar__YMD-icon {
+  opacity: 1.0!important;
+}
+
+.player-controls__track-container{
+  right: 300px!important;
+}
+
+.speed {
+  display: inline-block!important;
+}
+
+.page__track_YMD-icon {
+  margin: 0px;
+  margin-right: 16px;
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  opacity: .4;
+  overflow: hidden;
+  vertical-align: top;
+  -webkit-transition: color .2s;
+  transition: color .2s;
+}
+
+.page__track_YMD-icon:hover {
+  opacity: 1.0!important;
+}
+
+.page__YMD-button .page__YMD-icon.YMD-icon-light {
+  opacity: 1.0!important;
+}

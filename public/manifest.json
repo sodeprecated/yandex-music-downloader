@@ -4,32 +4,36 @@
   "author": "Daniil Zhdanovich",
   "description": "Загружай любимые треки без ограничений, с новым расширением для Yandex Music!",
   "permissions": [
-    "https://music.yandex.by/*",
-    "https://music.yandex.ru/*",
-    "https://music.yandex.ua/*",
-    "https://music.yandex.kz/*",
-    "https://music.yandex.com/*",
-    "https://storage.mds.yandex.net/*",
-    "https://avatars.yandex.net/*",
-    "downloads"
+    "*://music.yandex.by/*",
+    "*://music.yandex.ru/*",
+    "*://music.yandex.ua/*",
+    "*://music.yandex.kz/*",
+    "*://music.yandex.com/*",
+    "*://music.yandex.net/*",
+    "*://storage.mds.yandex.net/*",
+    "*://*.storage.yandex.net/*",
+    "*://avatars.yandex.net/*",
+    "downloads",
+    "storage"
   ],
   "background": {
-    "scripts": ["src/index.js"],
+    "scripts": ["background.js"],
     "persistent": false
   },
   "content_scripts": [
     {
-      "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"],
-      "js": [],
-      "css" : []
+      "matches": ["*://music.yandex.by/*", "*://music.yandex.ru/*", "*://music.yandex.ua/*", "*://music.yandex.kz/*", "*://music.yandex.com/*"],
+      "js": ["content.js"],
+      "css": ["styles/content.css"]
     }
   ],
-  "web_accessible_resources": [],
-  "externally_connectable": {
-    "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"]
-  },
+  "web_accessible_resources": [
+    "images/icon-dark.svg",
+    "images/icon-light.svg"
+  ],
   "browser_action": { 
-    "default_icon": "images/icon.png"
+    "default_icon": "images/inactive-icon.png",
+    "default_popup": "view/popup.html"
   },
   "icons":{
     "16":"images/logo/logo16.png",

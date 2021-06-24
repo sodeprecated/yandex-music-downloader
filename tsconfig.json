@@ -2,9 +2,9 @@
   "compilerOptions": {
     /* Basic Options */
     "incremental": true,
-    "target": "es5",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
-    "module": "es6",                          /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
-    "lib": ["esnext"],                        /* Specify library files to be included in the compilation. */
+    "target": "es6",                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
+    "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+    "lib": ["esnext", "dom"],                        /* Specify library files to be included in the compilation. */
     "allowJs": true,                          /* Allow javascript files to be compiled. */
     "checkJs": true,                          /* Report errors in .js files. */
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
@@ -36,8 +36,13 @@
     },                                        /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */
 
     "typeRoots": [
+      "./@types",
       "./node_modules/@types"
     ],                                        /* List of folders to include type definitions from. */
+
+    "types": [
+      "chrome"
+    ],
 
     "esModuleInterop": true,                  /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
 
@@ -60,6 +65,7 @@
   "exclude": [
     "./node_modules/*",
     "./coverage/*",
-    "./build/*"
+    "./build/*",
+    "./webpack.config.js"
   ]
 }
