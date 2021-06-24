@@ -31,9 +31,6 @@
     "images/icon-dark.svg",
     "images/icon-light.svg"
   ],
-  "externally_connectable": {
-    "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"]
-  },
   "browser_action": { 
     "default_icon": "images/inactive-icon.png",
     "default_popup": "view/popup.html"
