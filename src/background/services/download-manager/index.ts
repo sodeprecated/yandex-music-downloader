@@ -203,6 +203,12 @@ export class DownloadManager implements IDownloadManager {
     return this.downloadQueue_.length;
   }
   /**
+   * @return all items in queue
+   */
+  list(): DownloadItem[] {
+    return this.downloadQueue_;
+  }
+  /**
    * @return number of items that is currently downloading
    */
   inProgressSize(): number {
