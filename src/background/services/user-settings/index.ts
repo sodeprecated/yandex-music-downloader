@@ -76,6 +76,7 @@ export class UserSettings implements IUserSettings {
           items.downloadPlaylistsInSeparateFolder ??
           this.downloadPlaylistsInSeparateFolder;
         this.maxQueueSize = items.maxQueueSize ?? this.maxQueueSize;
+        this.concurrency = items.concurrency ?? this.concurrency;
         resolve();
       });
     });
