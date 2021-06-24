@@ -30,7 +30,7 @@ export class UserSettings implements IUserSettings {
   /** Max amount of download items waiting for download. -1 for no limit */
   maxQueueSize = -1;
   /** Number of download items at the same time */
-  concurrency = 4 /* sequential download */;
+  concurrency = 2;
 
   constructor() {
     if (!chrome) return; // for test
