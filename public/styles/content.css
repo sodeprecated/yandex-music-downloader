@@ -109,3 +109,7 @@
 .page__track_YMD-icon:hover {
   opacity: 1.0!important;
 }
+
+.page__YMD-button .page__YMD-icon.YMD-icon-light {
+  opacity: 1.0!important;
+}
