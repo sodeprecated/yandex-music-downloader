@@ -32,8 +32,7 @@
     "images/icon-light.svg"
   ],
   "browser_action": { 
-    "default_icon": "images/inactive-icon.png",
-    "default_popup": "view/popup.html"
+    "default_icon": "images/icon.png"
   },
   "icons":{
     "16":"images/logo/logo16.png",
