@@ -19,7 +19,9 @@ export class BackgroundApiService {
   static downloadManager: DownloadManager;
 
   private static errorListeners_: ErrorCallback[] = [];
-
+  private static completeEventCallback_: (
+    downloadItem: DownloadItem
+  ) => Promise<void>;
   protected static instance_: BackgroundApiService | null;
   /**
    * @return instance of BackgroundApiService.
@@ -34,6 +36,10 @@ export class BackgroundApiService {
     }
     if (!this.downloadManager) {
       this.downloadManager = new DownloadManager(this.userSettings.concurrency);
+      this.completeEventCallback_ = async item => {
+        await this.processDownloadItem_(item);
+      };
+      this.downloadManager.on('complete', this.completeEventCallback_);
     }
 
     return new BackgroundApiService(
@@ -53,10 +59,6 @@ export class BackgroundApiService {
     this.yandexMusicApi = yandexMusicApi;
     BackgroundApiService.userSettings = userSettings;
     BackgroundApiService.downloadManager = downloadManager;
-
-    BackgroundApiService.downloadManager.on('complete', async item => {
-      await this.processDownloadItem_(item);
-    });
   }
 
   /**
@@ -68,45 +70,9 @@ export class BackgroundApiService {
     }
   }
   /**
-   * Encodes file to filesystem friendly format by escaping banned symbols
-   */
-  private encodeFilename_(filename: string): string {
-    const res = filename
-      .replaceAll(':', '%58')
-      .replaceAll('?', '%63')
-      .replaceAll('/', '%47')
-      .replaceAll('\\', '%5C')
-      .replaceAll('"', '%22')
-      .replaceAll('|', '%124');
-    return res;
-  }
-  /**
-   * Alias for encodeFoldermame_
-   */
-  private encodeFolderName_(folderName: string): string {
-    return this.encodeFilename_(folderName);
-  }
-  /**
-   * Generate filename based on provided template and args
-   */
-  private generateTrackFilename_(
-    template: string,
-    title: string,
-    album: string,
-    artist: string
-  ): string {
-    const filename = template
-      .replaceAll('{title}', title)
-      .replaceAll('{album}', album)
-      .replaceAll('{artist}', artist)
-      .trim();
-
-    return this.encodeFilename_(filename);
-  }
-  /**
    * Downloads buffer
    */
-  private async downloadCover_(uri: string): Promise<Buffer> {
+  private static async downloadCover_(uri: string): Promise<Buffer> {
     const options = {
       path: uri,
       headers: {
@@ -132,14 +98,15 @@ export class BackgroundApiService {
    * Used as callback to onComplete event on downloadManager.
    * Sets id3 tags and saves file to specified folder
    */
-  private async processDownloadItem_(item: DownloadItem) {
+  private static async processDownloadItem_(item: DownloadItem) {
     if (!item.customData?.trackId) return;
+    if (!item.customData?.locale) return;
+
+    const yandexMusicApi = new YandexMusicAPI(item.customData.locale as string);
 
     try {
       /* get track info */
-      const track = await this.yandexMusicApi.getTrack(
-        +item.customData.trackId
-      );
+      const track = await yandexMusicApi.getTrack(+item.customData.trackId);
 
       /* set id3 tags */
       const tagWriter = new TrackID3TagWriter(item.bytes!);
@@ -173,7 +140,7 @@ export class BackgroundApiService {
       /* set cover */
       if (track.track.coverUri) {
         const cover = await this.downloadCover_(
-          await this.yandexMusicApi.getCoverDownloadLink(
+          await yandexMusicApi.getCoverDownloadLink(
             track.track.coverUri,
             BackgroundApiService.userSettings.coverSize
           )
@@ -212,6 +179,43 @@ export class BackgroundApiService {
       BackgroundApiService.emitError_(err);
     }
   }
+  /**
+   * Encodes file to filesystem friendly format by escaping banned symbols
+   */
+  private static encodeFilename_(filename: string): string {
+    const res = filename
+      .replaceAll(':', '%58')
+      .replaceAll('?', '%63')
+      .replaceAll('*', '%2A')
+      .replaceAll('/', '%47')
+      .replaceAll('\\', '%5C')
+      .replaceAll('"', '%22')
+      .replaceAll('|', '%124');
+    return res;
+  }
+  /**
+   * Alias for encodeFoldermame_
+   */
+  private static encodeFolderName_(folderName: string): string {
+    return this.encodeFilename_(folderName);
+  }
+  /**
+   * Generate filename based on provided template and args
+   */
+  private static generateTrackFilename_(
+    template: string,
+    title: string,
+    album: string,
+    artist: string
+  ): string {
+    const filename = template
+      .replaceAll('{title}', title)
+      .replaceAll('{album}', album)
+      .replaceAll('{artist}', artist)
+      .trim();
+
+    return this.encodeFilename_(filename);
+  }
 
   /* API */
   /**
@@ -219,7 +223,17 @@ export class BackgroundApiService {
    * Only errors fired in BackgroundApiService will be emitted
    */
   static onError(callback: ErrorCallback) {
+    if (this.errorListeners_.includes(callback)) return;
     this.errorListeners_.push(callback);
+  }
+  /**
+   * Removes error listener.
+   */
+  static removeErrorListener(callback: ErrorCallback) {
+    const index = this.errorListeners_.indexOf(callback);
+    if (index === -1) return;
+
+    this.errorListeners_.splice(index, 1);
   }
   /**
    * Adds track to the download queue
@@ -235,7 +249,7 @@ export class BackgroundApiService {
         +trackId
       );
 
-      const filename = this.generateTrackFilename_(
+      const filename = BackgroundApiService.generateTrackFilename_(
         BackgroundApiService.userSettings.filenameFormat,
         track.track.title,
         track.track.albums.length > 0 ? track.track.albums[0].title : '',
@@ -249,7 +263,7 @@ export class BackgroundApiService {
         track.track.title,
         filename + '.mp3',
         path,
-        {trackId}
+        {trackId, locale: this.yandexMusicApi.getLocale()}
       );
     } catch (err) {
       BackgroundApiService.emitError_(err);
@@ -271,7 +285,7 @@ export class BackgroundApiService {
             +track.id
           );
 
-          const filename = this.generateTrackFilename_(
+          const filename = BackgroundApiService.generateTrackFilename_(
             BackgroundApiService.userSettings.filenameFormat,
             track.title,
             track.albums.length > 0 ? track.albums[0].title : '',
@@ -283,11 +297,11 @@ export class BackgroundApiService {
             BackgroundApiService.userSettings.downloadAlbumsInSeparateFolder
           ) {
             if (album.artists.length > 0) {
-              path += `${this.encodeFolderName_(
+              path += `${BackgroundApiService.encodeFolderName_(
                 album.artists[0].name
-              )}-${this.encodeFolderName_(album.title)}/`;
+              )}-${BackgroundApiService.encodeFolderName_(album.title)}/`;
             } else {
-              path += `${this.encodeFolderName_(album.title)}/`;
+              path += `${BackgroundApiService.encodeFolderName_(album.title)}/`;
             }
           }
           if (album.volumes.length > 1) {
@@ -299,7 +313,7 @@ export class BackgroundApiService {
             track.title,
             filename + '.mp3',
             path,
-            {trackId: track.id}
+            {trackId: track.id, locale: this.yandexMusicApi.getLocale()}
           );
         } catch (err) {
           BackgroundApiService.emitError_(err);
@@ -322,7 +336,7 @@ export class BackgroundApiService {
           +track.id
         );
 
-        const filename = this.generateTrackFilename_(
+        const filename = BackgroundApiService.generateTrackFilename_(
           BackgroundApiService.userSettings.filenameFormat,
           track.title,
           track.albums.length > 0 ? track.albums[0].title : '',
@@ -333,7 +347,7 @@ export class BackgroundApiService {
         if (
           BackgroundApiService.userSettings.downloadPlaylistsInSeparateFolder
         ) {
-          path += `${this.encodeFolderName_(playlist.title)}/`;
+          path += `${BackgroundApiService.encodeFolderName_(playlist.title)}/`;
         }
 
         BackgroundApiService.downloadManager.download(
@@ -341,7 +355,7 @@ export class BackgroundApiService {
           track.title,
           filename + '.mp3',
           path,
-          {trackId: track.id}
+          {trackId: track.id, locale: this.yandexMusicApi.getLocale()}
         );
       } catch (err) {
         BackgroundApiService.emitError_(err);
@@ -365,7 +379,7 @@ export class BackgroundApiService {
           +track.id
         );
 
-        const filename = this.generateTrackFilename_(
+        const filename = BackgroundApiService.generateTrackFilename_(
           BackgroundApiService.userSettings.filenameFormat,
           track.title,
           track.albums.length > 0 ? track.albums[0].title : '',
@@ -374,7 +388,9 @@ export class BackgroundApiService {
 
         let path = BackgroundApiService.userSettings.downloadPath;
         if (BackgroundApiService.userSettings.downloadArtistsInSeparateFolder) {
-          path += `${this.encodeFolderName_(artist.artist.name)}/`;
+          path += `${BackgroundApiService.encodeFolderName_(
+            artist.artist.name
+          )}/`;
         }
 
         BackgroundApiService.downloadManager.download(
@@ -382,7 +398,7 @@ export class BackgroundApiService {
           track.title,
           filename + '.mp3',
           path,
-          {trackId: track.id}
+          {trackId: track.id, locale: this.yandexMusicApi.getLocale()}
         );
       } catch (err) {
         BackgroundApiService.emitError_(err);
@@ -397,92 +413,108 @@ chrome.runtime.onConnect.addListener(async port => {
     path: 'images/active-icon.png',
     tabId: port.sender?.tab?.id,
   });
+
+  const addEventCallback = async (downloadItem: DownloadItem) => {
+    const message: ChromeMessage = {
+      type: ChromeMessageType.DOWNLOAD_EVENT,
+      eventType: 'add',
+      downloadItem: {
+        ...downloadItem,
+        bytes: null,
+      },
+    };
+
+    port.postMessage(message);
+  };
+
+  const progressEventCallback = async (downloadItem: DownloadItem) => {
+    const message: ChromeMessage = {
+      type: ChromeMessageType.DOWNLOAD_EVENT,
+      eventType: 'progress',
+      downloadItem: {
+        ...downloadItem,
+        bytes: null,
+      },
+    };
+
+    port.postMessage(message);
+  };
+
+  const interruptedEventCallback = async (downloadItem: DownloadItem) => {
+    const message: ChromeMessage = {
+      type: ChromeMessageType.DOWNLOAD_EVENT,
+      eventType: 'interrupted',
+      downloadItem: {
+        ...downloadItem,
+        bytes: null,
+      },
+    };
+
+    port.postMessage(message);
+  };
+
+  const completeEventCallback = async (downloadItem: DownloadItem) => {
+    const message: ChromeMessage = {
+      type: ChromeMessageType.DOWNLOAD_EVENT,
+      eventType: 'complete',
+      downloadItem: {
+        ...downloadItem,
+        bytes: null,
+      },
+    };
+
+    port.postMessage(message);
+  };
+
+  const downloadErrorEventCallback = async (
+    downloadItem: DownloadItem,
+    error: Error
+  ) => {
+    const message: ChromeMessage = {
+      type: ChromeMessageType.DOWNLOAD_ERROR_EVENT,
+      downloadItem: {
+        ...downloadItem,
+        bytes: null,
+      },
+      error,
+    };
+
+    port.postMessage(message);
+  };
+
+  const errorEventCallback = (error: Error) => {
+    const message: ChromeMessage = {
+      type: ChromeMessageType.ERROR_EVENT,
+      error,
+    };
+
+    port.postMessage(message);
+  };
+
   const backgroundApi = await BackgroundApiService.getInstance(port.name);
   port.onMessage.addListener((message: ChromeMessage) => {
     switch (message.type) {
       case ChromeMessageType.ADD_DOWNLOAD_LISTENER: {
-        BackgroundApiService.downloadManager.on('add', async downloadItem => {
-          const message: ChromeMessage = {
-            type: ChromeMessageType.DOWNLOAD_EVENT,
-            eventType: 'add',
-            downloadItem: {
-              ...downloadItem,
-              bytes: null,
-            },
-          };
-
-          port.postMessage(message);
-        });
+        BackgroundApiService.downloadManager.on('add', addEventCallback);
         BackgroundApiService.downloadManager.on(
           'progress',
-          async downloadItem => {
-            const message: ChromeMessage = {
-              type: ChromeMessageType.DOWNLOAD_EVENT,
-              eventType: 'progress',
-              downloadItem: {
-                ...downloadItem,
-                bytes: null,
-              },
-            };
-
-            port.postMessage(message);
-          }
+          progressEventCallback
         );
         BackgroundApiService.downloadManager.on(
           'interrupted',
-          async downloadItem => {
-            const message: ChromeMessage = {
-              type: ChromeMessageType.DOWNLOAD_EVENT,
-              eventType: 'interrupted',
-              downloadItem: {
-                ...downloadItem,
-                bytes: null,
-              },
-            };
-
-            port.postMessage(message);
-          }
+          interruptedEventCallback
         );
         BackgroundApiService.downloadManager.on(
           'complete',
-          async downloadItem => {
-            const message: ChromeMessage = {
-              type: ChromeMessageType.DOWNLOAD_EVENT,
-              eventType: 'complete',
-              downloadItem: {
-                ...downloadItem,
-                bytes: null,
-              },
-            };
-
-            port.postMessage(message);
-          }
+          completeEventCallback
         );
         break;
       }
-      case ChromeMessageType.DOWNLOAD_ERROR_EVENT: {
+      case ChromeMessageType.ADD_ERROR_LISTENER: {
         BackgroundApiService.downloadManager.onError(
-          async (downloadItem, error) => {
-            const message: ChromeMessage = {
-              type: ChromeMessageType.DOWNLOAD_ERROR_EVENT,
-              downloadItem: {
-                ...downloadItem,
-                bytes: null,
-              },
-              error,
-            };
-
-            port.postMessage(message);
-          }
+          downloadErrorEventCallback
         );
-        BackgroundApiService.onError(error => {
-          const message: ChromeMessage = {
-            type: ChromeMessageType.ERROR_EVENT,
-            error,
-          };
-
-          port.postMessage(message);
-        });
+        BackgroundApiService.onError(errorEventCallback);
         break;
       }
       case ChromeMessageType.DOWNLOAD_TRACK: {
@@ -501,10 +533,46 @@ chrome.runtime.onConnect.addListener(async port => {
         backgroundApi.downloadArtist(message.artistId);
         break;
       }
+      case ChromeMessageType.LIST_DOWNLOAD_ITEMS: {
+        const message: ChromeMessage = {
+          type: ChromeMessageType.LIST_DOWNLOAD_ITEMS,
+          items: BackgroundApiService.downloadManager.list().map(item => {
+            return {...item, bytes: null};
+          }),
+        };
+
+        port.postMessage(message);
+        break;
+      }
       default: {
         console.debug('Unknown message type: ' + message.type);
         break;
       }
     }
+  });
+
+  port.onDisconnect.addListener(() => {
+    /* Remove registered hooks */
+    BackgroundApiService.downloadManager.removeListener(
+      'add',
+      addEventCallback
+    );
+    BackgroundApiService.downloadManager.removeListener(
+      'progress',
+      progressEventCallback
+    );
+    BackgroundApiService.downloadManager.removeListener(
+      'interrupted',
+      interruptedEventCallback
+    );
+    BackgroundApiService.downloadManager.removeListener(
+      'complete',
+      completeEventCallback
+    );
+    /* Remove registered error listeners */
+    BackgroundApiService.downloadManager.removeErrorListener(
+      downloadErrorEventCallback
+    );
+    BackgroundApiService.removeErrorListener(errorEventCallback);
   });
 });
