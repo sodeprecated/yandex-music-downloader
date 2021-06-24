@@ -22,8 +22,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://music.yandex.by/*","https://music.yandex.ru/*","https://music.yandex.ua/*","https://music.yandex.kz/*","https://music.yandex.com/*"],
-      "js": ["content.js"]
+      "matches": ["*://music.yandex.by/*", "*://music.yandex.ru/*", "*://music.yandex.ua/*", "*://music.yandex.kz/*", "*://music.yandex.com/*"],
+      "js": ["content.js"],
+      "css": ["styles/content.css"]
     }
   ],
   "web_accessible_resources": [
