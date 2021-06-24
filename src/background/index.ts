@@ -8,6 +8,8 @@ import {YandexMusicAPI} from './services/yandex-music-api';
 import {TrackID3TagWriter} from './services/id3-tag-writer';
 import {UserSettings} from './services/user-settings';
 
+import {ChromeMessageType, ChromeMessage} from './interfaces';
+
 type ErrorCallback = (err: Error) => void;
 
 export class BackgroundApiService {
@@ -73,6 +75,7 @@ export class BackgroundApiService {
       .replaceAll(':', '%58')
       .replaceAll('?', '%63')
       .replaceAll('/', '%47')
+      .replaceAll('\\', '%5C')
       .replaceAll('"', '%22')
       .replaceAll('|', '%124');
     return res;
@@ -271,17 +274,21 @@ export class BackgroundApiService {
           const filename = this.generateTrackFilename_(
             BackgroundApiService.userSettings.filenameFormat,
             track.title,
-            track.albums[0].title,
-            track.artists[0].name
+            track.albums.length > 0 ? track.albums[0].title : '',
+            track.artists.length > 0 ? track.artists[0].name : ''
           );
 
           let path = BackgroundApiService.userSettings.downloadPath;
           if (
             BackgroundApiService.userSettings.downloadAlbumsInSeparateFolder
           ) {
-            path += `${this.encodeFolderName_(
-              album.artists[0].name
-            )}-${this.encodeFolderName_(album.title)}/`;
+            if (album.artists.length > 0) {
+              path += `${this.encodeFolderName_(
+                album.artists[0].name
+              )}-${this.encodeFolderName_(album.title)}/`;
+            } else {
+              path += `${this.encodeFolderName_(album.title)}/`;
+            }
           }
           if (album.volumes.length > 1) {
             path += `volume ${volumeIndex}/`;
@@ -383,3 +390,121 @@ export class BackgroundApiService {
     }
   }
 }
+
+chrome.runtime.onConnect.addListener(async port => {
+  /* `port.name` is locale */
+  chrome.browserAction.setIcon({
+    path: 'images/active-icon.png',
+    tabId: port.sender?.tab?.id,
+  });
+  const backgroundApi = await BackgroundApiService.getInstance(port.name);
+  port.onMessage.addListener((message: ChromeMessage) => {
+    switch (message.type) {
+      case ChromeMessageType.ADD_DOWNLOAD_LISTENER: {
+        BackgroundApiService.downloadManager.on('add', async downloadItem => {
+          const message: ChromeMessage = {
+            type: ChromeMessageType.DOWNLOAD_EVENT,
+            eventType: 'add',
+            downloadItem: {
+              ...downloadItem,
+              bytes: null,
+            },
+          };
+
+          port.postMessage(message);
+        });
+        BackgroundApiService.downloadManager.on(
+          'progress',
+          async downloadItem => {
+            const message: ChromeMessage = {
+              type: ChromeMessageType.DOWNLOAD_EVENT,
+              eventType: 'progress',
+              downloadItem: {
+                ...downloadItem,
+                bytes: null,
+              },
+            };
+
+            port.postMessage(message);
+          }
+        );
+        BackgroundApiService.downloadManager.on(
+          'interrupted',
+          async downloadItem => {
+            const message: ChromeMessage = {
+              type: ChromeMessageType.DOWNLOAD_EVENT,
+              eventType: 'interrupted',
+              downloadItem: {
+                ...downloadItem,
+                bytes: null,
+              },
+            };
+
+            port.postMessage(message);
+          }
+        );
+        BackgroundApiService.downloadManager.on(
+          'complete',
+          async downloadItem => {
+            const message: ChromeMessage = {
+              type: ChromeMessageType.DOWNLOAD_EVENT,
+              eventType: 'complete',
+              downloadItem: {
+                ...downloadItem,
+                bytes: null,
+              },
+            };
+
+            port.postMessage(message);
+          }
+        );
+        break;
+      }
+      case ChromeMessageType.DOWNLOAD_ERROR_EVENT: {
+        BackgroundApiService.downloadManager.onError(
+          async (downloadItem, error) => {
+            const message: ChromeMessage = {
+              type: ChromeMessageType.DOWNLOAD_ERROR_EVENT,
+              downloadItem: {
+                ...downloadItem,
+                bytes: null,
+              },
+              error,
+            };
+
+            port.postMessage(message);
+          }
+        );
+        BackgroundApiService.onError(error => {
+          const message: ChromeMessage = {
+            type: ChromeMessageType.ERROR_EVENT,
+            error,
+          };
+
+          port.postMessage(message);
+        });
+        break;
+      }
+      case ChromeMessageType.DOWNLOAD_TRACK: {
+        backgroundApi.downloadTrack(message.trackId);
+        break;
+      }
+      case ChromeMessageType.DOWNLOAD_ALBUM: {
+        backgroundApi.downloadAlbum(message.albumId);
+        break;
+      }
+      case ChromeMessageType.DOWNLOAD_PLAYLIST: {
+        backgroundApi.downloadPlaylist(message.owner, message.kind);
+        break;
+      }
+      case ChromeMessageType.DOWNLOAD_ARTIST: {
+        backgroundApi.downloadArtist(message.artistId);
+        break;
+      }
+      default: {
+        console.debug('Unknown message type: ' + message.type);
+        break;
+      }
+    }
+  });
+});
