@@ -186,4 +186,10 @@ export class YandexMusicAPI implements IYandexMusicAPI {
   async getCoverDownloadLink(coverUri: string, size: number): Promise<string> {
     return 'https://' + coverUri.slice(0, -2) + `${size}x${size}`;
   }
+  /**
+   * @return instance locale
+   */
+  getLocale(): string {
+    return this.locale_;
+  }
 }

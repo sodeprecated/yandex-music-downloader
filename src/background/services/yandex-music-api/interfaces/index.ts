@@ -245,6 +245,8 @@ export type Lyric = {
 };
 
 export interface YandexMusicAPI {
+  getLocale(): string;
+
   getTrack(trackId: number): Promise<{
     readonly artists: Artist[];
     readonly otherVersions: {[version: string]: Track[]};
