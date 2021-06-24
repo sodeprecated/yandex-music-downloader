@@ -12,6 +12,8 @@ export enum ChromeMessageType {
   DOWNLOAD_EVENT = 6,
   DOWNLOAD_ERROR_EVENT = 7,
   ERROR_EVENT = 8,
+
+  LIST_DOWNLOAD_ITEMS = 9,
 }
 
 export type ChromeMessage =
@@ -51,4 +53,8 @@ export type ChromeMessage =
   | {
       type: ChromeMessageType.ERROR_EVENT;
       error: Error;
+    }
+  | {
+      type: ChromeMessageType.LIST_DOWNLOAD_ITEMS;
+      items: (DownloadItem & {bytes: null})[];
     };
