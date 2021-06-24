@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box
+}
+
+body, html {
+  height: 100%;
+  font-family: sans-serif
+}
+
+a {
+  margin: 0;
+  transition: all .4s;
+  -webkit-transition: all .4s;
+  -o-transition: all .4s;
+  -moz-transition: all .4s
+}
+
+a:focus {
+  outline: none !important
+}
+
+a:hover {
+  text-decoration: none
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0
+}
+
+p {
+  margin: 0
+}
+
+ul, li {
+  margin: 0;
+  list-style-type: none
+}
+
+input {
+  display: block;
+  outline: none;
+  border: none !important
+}
+
+textarea {
+  display: block;
+  outline: none
+}
+
+textarea:focus, input:focus {
+  border-color: transparent !important
+}
+
+button {
+  outline: none !important;
+  border: none;
+  background: 0 0
+}
+
+button:hover {
+  cursor: pointer
+}
+
+iframe {
+  border: none !important
+}
+
+body {
+  width: 300px;
+  height: 250px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-y: scroll;
+
+  height: 100%;
+}
+
+.table {
+  width: 100%;
+  max-height: 100%;
+  display: table;
+}
+
+.row {
+  display: table-row;
+  background:#fff;
+}
+
+.row.header {
+  color: #fff;
+  background: #666;
+}
+
+.cell {
+  display: table-cell;
+  text-align: center;
+}
+
+.row .cell {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1em;
+  color: #666;
+  font-weight: unset !important;
+  padding-top: 0.6em;
+  padding-bottom: 0.6em;
+  border-bottom: 1px solid #f2f2f2
+}
+
+
+.row.header .cell {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1em;
+  color: #fff;
+  font-weight: unset !important;
+  padding-top: 0.8em;
+  padding-bottom: 0.8em;
+}
+
+.row .cell:nth-child(1) {
+  padding-left: 0.6em;
+  width: 30px;
+}
+
+.row .cell:nth-child(2) {
+  width: 100px;
+}
+
+.row .cell:nth-child(3) {
+  width: 60px;
+}
+
+.row .cell:nth-child(4) {
+  width: 60px;
+  padding-right: 0.6em;
+}
+
+.table, .row {
+  width: 100% !important
+}
+
+.row:not(.header):hover {
+  background-color: #ececff;
+  cursor:pointer
+}
+
+
+
+download-element[state=in_progress] .state span {
+  content: '0%';
+}
