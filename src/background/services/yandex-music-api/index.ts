@@ -36,6 +36,15 @@ type FileDownloadInfo = {
  * Implementation of yandex api functional
  */
 export class YandexMusicAPI implements IYandexMusicAPI {
+  protected static availableLocales_: string[] = [
+    'by',
+    'ru',
+    'kz',
+    'com',
+    'net',
+    'ua',
+  ];
+
   protected locale_: string;
   protected headers_: {[header: string]: string};
   /**
@@ -75,6 +84,9 @@ export class YandexMusicAPI implements IYandexMusicAPI {
    * @example new YandexMusicAPI('by')
    */
   constructor(locale = 'ru') {
+    if (!YandexMusicAPI.availableLocales_.includes(locale)) {
+      locale = 'com';
+    }
     this.locale_ = locale;
     this.headers_ = {
       'X-Retpath-Y': encodeURI(`https://${this.getHostname()}/`),
