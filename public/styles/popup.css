@@ -70,7 +70,7 @@ iframe {
 }
 
 body {
-  width: 300px;
+  width: 350px;
   height: 250px;
 }
 
@@ -128,15 +128,15 @@ body {
 }
 
 .row .cell:nth-child(2) {
-  width: 100px;
+  width: 110px;
 }
 
 .row .cell:nth-child(3) {
-  width: 60px;
+  width: 80px;
 }
 
 .row .cell:nth-child(4) {
-  width: 60px;
+  width: 80px;
   padding-right: 0.6em;
 }
 
