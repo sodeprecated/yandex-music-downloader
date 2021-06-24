@@ -65,6 +65,7 @@
   "exclude": [
     "./node_modules/*",
     "./coverage/*",
-    "./build/*"
+    "./build/*",
+    "./webpack.config.js"
   ]
 }
