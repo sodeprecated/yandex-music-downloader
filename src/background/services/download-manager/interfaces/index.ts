@@ -76,6 +76,10 @@ export interface DownloadManager {
 
   /* Hooks */
   on(type: HookType, callback: AsyncHookCallback): void;
+  /* Removes hook */
+  removeListener(type: HookType, callback: AsyncHookCallback): void;
   /* Error while processing download item */
   onError(callback: AsyncErrorCallback): void;
+  /* Removes error listener */
+  removeErrorListener(callback: AsyncErrorCallback): void;
 }

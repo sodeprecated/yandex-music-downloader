@@ -251,10 +251,26 @@ export class DownloadManager implements IDownloadManager {
 
   /* Hooks */
   on(type: HookType, callback: AsyncHookCallback): void {
+    if (this.listeners_[type].includes(callback)) return;
     this.listeners_[type].push(callback);
+  }
+  /* Removes hook */
+  removeListener(type: HookType, callback: AsyncHookCallback): void {
+    const index = this.listeners_[type].indexOf(callback);
+    if (index === -1) return;
+
+    this.listeners_[type].splice(index, 1);
   }
   /* Error while processing download item */
   onError(callback: AsyncErrorCallback): void {
+    if (this.errorListeners_.includes(callback)) return;
     this.errorListeners_.push(callback);
+  }
+  /* Removes error listener */
+  removeErrorListener(callback: AsyncErrorCallback) {
+    const index = this.errorListeners_.indexOf(callback);
+    if (index === -1) return;
+
+    this.errorListeners_.splice(index, 1);
   }
 }
