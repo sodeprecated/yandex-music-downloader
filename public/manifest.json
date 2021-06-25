@@ -8,8 +8,8 @@
     "*://music.yandex.ru/*",
     "*://music.yandex.ua/*",
     "*://music.yandex.kz/*",
+    "*://music.yandex.uz/*",
     "*://music.yandex.com/*",
-    "*://music.yandex.net/*",
     "*://storage.mds.yandex.net/*",
     "*://*.storage.yandex.net/*",
     "*://avatars.yandex.net/*",
@@ -22,7 +22,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://music.yandex.by/*", "*://music.yandex.ru/*", "*://music.yandex.ua/*", "*://music.yandex.kz/*", "*://music.yandex.com/*"],
+      "matches": ["*://music.yandex.uz/*", "*://music.yandex.by/*", "*://music.yandex.ru/*", "*://music.yandex.ua/*", "*://music.yandex.kz/*", "*://music.yandex.com/*"],
       "js": ["content.js"],
       "css": ["styles/content.css"]
     }
