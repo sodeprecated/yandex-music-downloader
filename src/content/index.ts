@@ -410,11 +410,25 @@ const removeSidebarIcons = () => {
     const artistPage = document.querySelector('.page-artist');
     if (artistPage) {
       addArtistPageIcons(artistPage);
+      return;
     }
 
     const albumPage = document.querySelector('.page-album');
     if (albumPage) {
       addAlbumPageIcons(albumPage);
+      return;
+    }
+
+    const chartPage = document.querySelector('.page-main__chart');
+    if (chartPage) {
+      addCenterblockTrackIcons();
+      return;
+    }
+
+    const metatagPage = document.querySelector('.page-metatag');
+    if (metatagPage) {
+      addCenterblockTrackIcons();
+      return;
     }
   });
   observer.observe(targetNode, config);
