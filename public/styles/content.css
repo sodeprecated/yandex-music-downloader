@@ -96,7 +96,7 @@
 .page__track_YMD-icon {
   margin: 0px;
   margin-right: 16px;
-  display: inline-block;
+  display: none;
   width: 24px;
   height: 24px;
   opacity: .4;
@@ -104,6 +104,10 @@
   vertical-align: top;
   -webkit-transition: color .2s;
   transition: color .2s;
+}
+
+.d-track:hover .page__track_YMD-icon {
+  display: inline-block;
 }
 
 .page__track_YMD-icon:hover {
