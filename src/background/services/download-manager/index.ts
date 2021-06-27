@@ -10,7 +10,11 @@ import {
   AsyncErrorCallback,
 } from './interfaces';
 
-type DownloadPartialCallback = (bytes: number, totalBytes: number) => void;
+type DownloadPartialCallback = (
+  bytes: number,
+  totalBytes: number,
+  closeConnection: () => void
+) => void;
 
 export class DownloadManager implements IDownloadManager {
   private concurrency_: number;
@@ -34,29 +38,23 @@ export class DownloadManager implements IDownloadManager {
       },
     };
 
-    return new Promise<Buffer>((resolve, reject) => {
-      https
+    return new Promise<Buffer | null>((resolve, reject) => {
+      const request = https
         .get(options, (res: IncomingMessage) => {
           const rawData: Buffer[] = [];
           const totalBytes = +(res.headers['content-length'] ?? -1);
 
-          const minChunkSize = Math.max(Math.round(totalBytes / 500), 16384);
-          let currentChunkBytes = 0;
+          const closeConnection = () => {
+            request.destroy();
+            resolve(null);
+          };
 
           res.on('data', (chunk: Buffer) => {
             rawData.push(chunk);
-            currentChunkBytes += chunk.byteLength;
-
-            if (currentChunkBytes >= minChunkSize) {
-              callback(currentChunkBytes, totalBytes);
-              currentChunkBytes = 0;
-            }
+            callback(chunk.byteLength, totalBytes, closeConnection);
           });
           res.on('error', reject);
           res.on('end', () => {
-            if (currentChunkBytes !== 0) {
-              callback(currentChunkBytes, totalBytes);
-            }
             resolve(Buffer.concat(rawData));
           });
         })
@@ -94,19 +92,27 @@ export class DownloadManager implements IDownloadManager {
     try {
       downloadItem.bytes = await this.downloadBuffer_(
         downloadItem.uri,
-        (cur, total) => {
+        (cur, total, closeConnection) => {
           downloadItem.size = total;
           downloadItem.downloadedSize += cur;
 
+          if (downloadItem.state === DownloadItemState.INTERRUPTED) {
+            closeConnection();
+          }
           /* EMIT progress */
           this.emit_('progress', downloadItem);
         }
       );
 
-      downloadItem.state = DownloadItemState.COMPLETE;
-
-      /* EMIT complete */
-      this.emit_('complete', downloadItem);
+      if (downloadItem.bytes === null) {
+        downloadItem.state = DownloadItemState.INTERRUPTED;
+        /* EMIT interrupted */
+        this.emit_('interrupted', downloadItem);
+      } else {
+        downloadItem.state = DownloadItemState.COMPLETE;
+        /* EMIT complete */
+        this.emit_('complete', downloadItem);
+      }
     } catch (err) {
       downloadItem.state = DownloadItemState.ERROR;
       /* EMIT ERROR */
@@ -159,13 +165,24 @@ export class DownloadManager implements IDownloadManager {
     return downloadItem;
   }
   /**
-   * NOT IMPLEMENTED
-   *
    * Stops downloading.
    * @return true if successeed
    */
-  interrupt(_downloadItemId: number) {
-    throw new Error('Not implemented');
+  interrupt(downloadItemId: number) {
+    const downloadItem = this.downloadQueue_.find(
+      item => item.id === downloadItemId
+    );
+
+    if (downloadItem) {
+      if (downloadItem.state === DownloadItemState.IN_PROGRESS) {
+        downloadItem.state = DownloadItemState.INTERRUPTED;
+      } else if (downloadItem.state === DownloadItemState.PENDING) {
+        downloadItem.state = DownloadItemState.INTERRUPTED;
+        /* EMIT interrupted */
+        this.emit_('interrupted', downloadItem);
+        this.queueRemove_(downloadItemId);
+      }
+    }
   }
   /**
    * Removes item from queue.
@@ -240,6 +257,7 @@ export class DownloadManager implements IDownloadManager {
    * Emits error event passing to it target download item and error
    */
   private async emitError_(item: DownloadItem, err: Error) {
+    console.error(err);
     for await (const errorListener of this.errorListeners_) {
       try {
         await errorListener(item, err);
