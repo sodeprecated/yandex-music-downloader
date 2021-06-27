@@ -65,6 +65,7 @@ export class BackgroundApiService {
    * Passes error object to all error listeners
    */
   private static emitError_(err: Error) {
+    console.error(err);
     for (const callback of this.errorListeners_) {
       callback(err);
     }
@@ -542,6 +543,10 @@ chrome.runtime.onConnect.addListener(async port => {
         };
 
         port.postMessage(message);
+        break;
+      }
+      case ChromeMessageType.INTERRUPT_DOWNLOAD: {
+        BackgroundApiService.downloadManager.interrupt(message.downloadItemId);
         break;
       }
       default: {
