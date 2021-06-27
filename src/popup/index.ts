@@ -1,3 +1,4 @@
+import {DownloadItem} from '../background/services/download-manager/interfaces';
 import {ChromeMessageType, ChromeMessage} from '../background/interfaces';
 import {HTMLDownloadElement} from './download-element';
 
@@ -17,6 +18,27 @@ port.postMessage(listDownloadItemsMessage);
 const downloadQueue = document.querySelector('download-queue')!;
 const list: HTMLDownloadElement[] = [];
 
+const createDownloadElement = (
+  downloadQueue: Element,
+  list: HTMLDownloadElement[],
+  _port: chrome.runtime.Port,
+  downloadItem: DownloadItem
+) => {
+  const element = new HTMLDownloadElement(downloadItem);
+  list.push(element);
+  downloadQueue.append(element);
+
+  element.querySelector('.state i')!.addEventListener('click', () => {
+    const message: ChromeMessage = {
+      type: ChromeMessageType.INTERRUPT_DOWNLOAD,
+      downloadItemId: downloadItem.id,
+    };
+
+    port.postMessage(message);
+  });
+  return element;
+};
+
 port.onMessage.addListener((message: ChromeMessage) => {
   switch (message.type) {
     case ChromeMessageType.DOWNLOAD_EVENT: {
@@ -26,18 +48,14 @@ port.onMessage.addListener((message: ChromeMessage) => {
       if (item) {
         item.update(message.downloadItem);
       } else if (message.eventType === 'add') {
-        const element = new HTMLDownloadElement(message.downloadItem);
-        list.push(element);
-        downloadQueue.append(element);
+        createDownloadElement(downloadQueue, list, port, message.downloadItem);
       }
       break;
     }
     case ChromeMessageType.LIST_DOWNLOAD_ITEMS: {
       for (const item of message.items) {
         if (!list.find(el => el.downloadItem.id === item.id)) {
-          const element = new HTMLDownloadElement(item);
-          list.push(element);
-          downloadQueue.append(element);
+          createDownloadElement(downloadQueue, list, port, item);
         }
       }
       break;

@@ -18,14 +18,20 @@ export class HTMLDownloadElement extends HTMLElement {
   private downloadItem_: DownloadItem;
   private error_: Error | null;
 
+  private stateIconElement_: HTMLElement;
+  private nameElement_: HTMLElement;
+  private estimatedTimeLeftElement_: HTMLElement;
+  private downloadSpeedElement_: HTMLElement;
+
   private stateIconStyle_(state: DownloadItem['state']) {
     const mapping = new Map([
       ['in_progress', 'fas fa-spinner'],
-      ['pending', 'far fa-circle'],
+      ['pending', 'fas fa-circle-notch'],
       ['complete', 'fas fa-check-circle'],
-      ['interrupted', 'fas fa-exclamation-circle'],
+      ['error', 'fas fa-exclamation-circle'],
+      ['interrupted', 'fas fa-ban'],
     ]);
-    return mapping.get(state);
+    return mapping.get(state)!;
   }
 
   private trimNameToLength_(name: string, length: number): string {
@@ -65,26 +71,7 @@ export class HTMLDownloadElement extends HTMLElement {
     }
   }
 
-  constructor(downloadItem: DownloadItem) {
-    if (!HTMLDownloadElement.isInited) {
-      customElements.define('download-element', HTMLDownloadElement);
-      HTMLDownloadElement.isInited = true;
-    }
-    super();
-
-    this.downloadItem_ = downloadItem;
-    this.error_ = null;
-
-    this.classList.add('row');
-
-    this.update(downloadItem);
-  }
-
-  get downloadItem(): DownloadItem {
-    return this.downloadItem_;
-  }
-
-  update(downloadItem: DownloadItem): void {
+  private init_(downloadItem: DownloadItem): void {
     this.downloadItem_ = downloadItem;
     this.setAttribute('state', this.downloadItem_.state);
 
@@ -102,10 +89,10 @@ export class HTMLDownloadElement extends HTMLElement {
 
       this.innerHTML += `
       <div class="cell estimated-time-left">
-        ${time.time.toFixed(2)}<span class="units">${time.units}</span>
+        ${time.time.toFixed()}<span class="units">${time.units}</span>
       </div>
       <div class="cell download-speed">
-        ${speed.speed.toFixed(2)}<span class="units">${speed.units}</span>
+        ${speed.speed.toFixed()}<span class="units">${speed.units}</span>
       </div>`;
     } else {
       this.innerHTML += `
@@ -115,6 +102,57 @@ export class HTMLDownloadElement extends HTMLElement {
       <div class="cell download-speed">
         -<span class="units"></span>
       </div>`;
+    }
+  }
+
+  constructor(downloadItem: DownloadItem) {
+    if (!HTMLDownloadElement.isInited) {
+      customElements.define('download-element', HTMLDownloadElement);
+      HTMLDownloadElement.isInited = true;
+    }
+    super();
+
+    this.downloadItem_ = downloadItem;
+    this.error_ = null;
+
+    this.classList.add('row');
+
+    this.init_(downloadItem);
+
+    this.stateIconElement_ = this.querySelector('.state i')!;
+    this.nameElement_ = this.querySelector('.name')!;
+    this.estimatedTimeLeftElement_ = this.querySelector(
+      '.estimated-time-left'
+    )!;
+    this.downloadSpeedElement_ = this.querySelector('.download-speed')!;
+  }
+
+  get downloadItem(): DownloadItem {
+    return this.downloadItem_;
+  }
+
+  update(downloadItem: DownloadItem): void {
+    this.downloadItem_ = downloadItem;
+    this.setAttribute('state', this.downloadItem_.state);
+
+    this.stateIconElement_.classList.value = this.stateIconStyle_(
+      downloadItem.state
+    );
+    this.nameElement_.innerHTML = this.trimNameToLength_(downloadItem.name, 15);
+
+    if (this.getSpeed_() && this.getEstimatedTime_()) {
+      const speed = this.getSpeed_()!;
+      const time = this.getEstimatedTime_()!;
+
+      this.estimatedTimeLeftElement_.innerHTML = `
+        ${time.time.toFixed()}<span class="units">${time.units}</span>
+      `;
+      this.downloadSpeedElement_.innerHTML = `
+        ${speed.speed.toFixed()}<span class="units">${speed.units}</span>
+      `;
+    } else {
+      this.estimatedTimeLeftElement_.innerHTML = '-<span class="units"></span>';
+      this.downloadSpeedElement_.innerHTML = '-<span class="units"></span>';
     }
   }
 
