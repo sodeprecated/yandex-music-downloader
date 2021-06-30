@@ -5,8 +5,8 @@ import {
   DownloadItem,
   DownloadManager as IDownloadManager,
   DownloadItemState,
-  HookType,
-  AsyncHookCallback,
+  EventType,
+  AsyncEventCallback,
   AsyncErrorCallback,
 } from './interfaces';
 
@@ -214,16 +214,16 @@ export class DownloadManager implements IDownloadManager {
     );
   }
   /**
+   * @return current list of download items
+   */
+  list(): DownloadItem[] {
+    return this.downloadQueue_;
+  }
+  /**
    * @return current size of queue
    */
   size(): number {
     return this.downloadQueue_.length;
-  }
-  /**
-   * @return all items in queue
-   */
-  list(): DownloadItem[] {
-    return this.downloadQueue_;
   }
   /**
    * @return number of items that is currently downloading
@@ -234,7 +234,7 @@ export class DownloadManager implements IDownloadManager {
 
   /* Hooks */
 
-  private listeners_: {[key: string]: AsyncHookCallback[]} = {
+  private listeners_: {[key: string]: AsyncEventCallback[]} = {
     add: [],
     interrupted: [],
     progress: [],
@@ -244,7 +244,7 @@ export class DownloadManager implements IDownloadManager {
   /**
    * Emits event of type `type` passing to it target download item
    */
-  private async emit_(type: HookType, item: DownloadItem) {
+  private async emit_(type: EventType, item: DownloadItem) {
     for await (const listener of this.listeners_[type]) {
       try {
         await listener(item);
@@ -267,28 +267,38 @@ export class DownloadManager implements IDownloadManager {
     }
   }
 
-  /* Hooks */
-  on(type: HookType, callback: AsyncHookCallback): void {
-    if (this.listeners_[type].includes(callback)) return;
-    this.listeners_[type].push(callback);
+  /* Events */
+  on(
+    type: EventType | 'error',
+    callback: AsyncEventCallback | AsyncErrorCallback
+  ): void {
+    if (type === 'error') {
+      if (!this.errorListeners_.includes(callback)) {
+        this.errorListeners_.push(callback);
+      }
+    } else {
+      if (!this.listeners_[type].includes(callback as AsyncEventCallback)) {
+        this.listeners_[type].push(callback as AsyncEventCallback);
+      }
+    }
   }
   /* Removes hook */
-  removeListener(type: HookType, callback: AsyncHookCallback): void {
-    const index = this.listeners_[type].indexOf(callback);
-    if (index === -1) return;
+  removeListener(
+    type: EventType | 'error',
+    callback: AsyncEventCallback | AsyncErrorCallback
+  ): void {
+    if (type === 'error') {
+      const index = this.errorListeners_.indexOf(callback);
+      if (index === -1) return;
 
-    this.listeners_[type].splice(index, 1);
-  }
-  /* Error while processing download item */
-  onError(callback: AsyncErrorCallback): void {
-    if (this.errorListeners_.includes(callback)) return;
-    this.errorListeners_.push(callback);
-  }
-  /* Removes error listener */
-  removeErrorListener(callback: AsyncErrorCallback) {
-    const index = this.errorListeners_.indexOf(callback);
-    if (index === -1) return;
+      this.errorListeners_.splice(index, 1);
+    } else {
+      const index = this.listeners_[type].indexOf(
+        callback as AsyncEventCallback
+      );
+      if (index === -1) return;
 
-    this.errorListeners_.splice(index, 1);
+      this.listeners_[type].splice(index, 1);
+    }
   }
 }

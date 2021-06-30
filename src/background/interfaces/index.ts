@@ -1,4 +1,4 @@
-import {HookType, DownloadItem} from '../services/download-manager/interfaces';
+import {EventType, DownloadItem} from '../services/download-manager/interfaces';
 
 export enum ChromeMessageType {
   DOWNLOAD_TRACK = 0,
@@ -43,7 +43,7 @@ export type ChromeMessage =
     }
   | {
       type: ChromeMessageType.DOWNLOAD_EVENT;
-      eventType: HookType;
+      eventType: EventType;
       downloadItem: DownloadItem & {bytes: null};
     }
   | {

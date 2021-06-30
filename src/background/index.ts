@@ -223,14 +223,14 @@ export class BackgroundApiService {
    * Add error listener.
    * Only errors fired in BackgroundApiService will be emitted
    */
-  static onError(callback: ErrorCallback) {
+  static on(_type: 'error', callback: ErrorCallback) {
     if (this.errorListeners_.includes(callback)) return;
     this.errorListeners_.push(callback);
   }
   /**
    * Removes error listener.
    */
-  static removeErrorListener(callback: ErrorCallback) {
+  static removeListener(_type: 'error', callback: ErrorCallback) {
     const index = this.errorListeners_.indexOf(callback);
     if (index === -1) return;
 
@@ -512,10 +512,11 @@ chrome.runtime.onConnect.addListener(async port => {
         break;
       }
       case ChromeMessageType.ADD_ERROR_LISTENER: {
-        BackgroundApiService.downloadManager.onError(
+        BackgroundApiService.downloadManager.on(
+          'error',
           downloadErrorEventCallback
         );
-        BackgroundApiService.onError(errorEventCallback);
+        BackgroundApiService.on('error', errorEventCallback);
         break;
       }
       case ChromeMessageType.DOWNLOAD_TRACK: {
@@ -575,9 +576,10 @@ chrome.runtime.onConnect.addListener(async port => {
       completeEventCallback
     );
     /* Remove registered error listeners */
-    BackgroundApiService.downloadManager.removeErrorListener(
+    BackgroundApiService.downloadManager.removeListener(
+      'error',
       downloadErrorEventCallback
     );
-    BackgroundApiService.removeErrorListener(errorEventCallback);
+    BackgroundApiService.removeListener('error', errorEventCallback);
   });
 });

@@ -25,8 +25,8 @@ export type DownloadItem = {
   customData?: {[key: string]: number | string | boolean | Buffer};
 };
 
-export type HookType = 'add' | 'interrupted' | 'progress' | 'complete';
-export type AsyncHookCallback = (item: DownloadItem) => Promise<void>;
+export type EventType = 'add' | 'interrupted' | 'progress' | 'complete';
+export type AsyncEventCallback = (item: DownloadItem) => Promise<void>;
 export type AsyncErrorCallback = (
   item: DownloadItem,
   err: Error
@@ -66,6 +66,10 @@ export interface DownloadManager {
    */
   clear(): void;
   /**
+   * @return current list of download items
+   */
+  list(): DownloadItem[];
+  /**
    * @return current size of queue
    */
   size(): number;
@@ -75,11 +79,11 @@ export interface DownloadManager {
   inProgressSize(): number;
 
   /* Hooks */
-  on(type: HookType, callback: AsyncHookCallback): void;
-  /* Removes hook */
-  removeListener(type: HookType, callback: AsyncHookCallback): void;
+  on(type: EventType, callback: AsyncEventCallback): void;
   /* Error while processing download item */
-  onError(callback: AsyncErrorCallback): void;
+  on(type: 'error', callback: AsyncErrorCallback): void;
+  /* Removes hook */
+  removeListener(type: EventType, callback: AsyncEventCallback): void;
   /* Removes error listener */
-  removeErrorListener(callback: AsyncErrorCallback): void;
+  removeListener(type: 'error', callback: AsyncErrorCallback): void;
 }
