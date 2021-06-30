@@ -149,8 +149,12 @@ body {
   cursor:pointer
 }
 
+download-element[state=in_progress] .state i:hover::before {
+  color: red;
+  content: "\f2ed";
+}
 
-
-download-element[state=in_progress] .state span {
-  content: '0%';
+download-element[state=pending] .state i:hover::before{
+  color: red;
+  content: "\f2ed";
 }

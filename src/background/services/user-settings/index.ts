@@ -11,7 +11,7 @@ export class UserSettings implements IUserSettings {
    */
   filenameFormat = '{artist} {title}';
   /** Download path relative to chrome's default download path*/
-  downloadPath = './';
+  downloadPath = '';
   /**
    * If true, when downloading album,
    * all songs will be saved to separate folder
@@ -42,7 +42,8 @@ export class UserSettings implements IUserSettings {
       this.coverSize = changes.coverSize?.newValue ?? this.coverSize;
       this.filenameFormat =
         changes.filenameFormat?.newValue ?? this.filenameFormat;
-      this.downloadPath = changes.downloadPath?.newValue ?? this.downloadPath;
+      // this.downloadPath =
+      //  changes.downloadPath?.newValue ?? this.downloadPath;
       this.downloadAlbumsInSeparateFolder =
         changes.downloadAlbumsInSeparateFolder?.newValue ??
         this.downloadAlbumsInSeparateFolder;
@@ -65,7 +66,7 @@ export class UserSettings implements IUserSettings {
       chrome.storage.sync.get(Object.keys(this), items => {
         this.coverSize = items.coverSize ?? this.coverSize;
         this.filenameFormat = items.filenameFormat ?? this.filenameFormat;
-        this.downloadPath = items.downloadPath ?? this.downloadPath;
+        // this.downloadPath = items.downloadPath ?? this.downloadPath;
         this.downloadAlbumsInSeparateFolder =
           items.downloadAlbumsInSeparateFolder ??
           this.downloadAlbumsInSeparateFolder;
