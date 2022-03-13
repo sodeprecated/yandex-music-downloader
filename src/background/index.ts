@@ -169,6 +169,7 @@ export class BackgroundApiService {
           {
             url: trackUrl,
             filename: item.downloadPath + item.filename,
+            saveAs: false,
           },
           () => {
             tagWriter.revokeUrl();

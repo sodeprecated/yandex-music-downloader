@@ -1,6 +1,6 @@
 {
   "name": "Yandex Music Downloader",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Daniil Zhdanovich",
   "description": "Загружай любимые треки без ограничений, с новым расширением для Yandex Music!",
   "permissions": [
@@ -31,7 +31,7 @@
     "images/icon-dark.svg",
     "images/icon-light.svg"
   ],
-  "browser_action": { 
+  "browser_action": {
     "default_icon": "images/inactive-icon.png",
     "default_popup": "view/popup.html"
   },
