@@ -9,7 +9,7 @@ export class UserSettings implements IUserSettings {
    * {artist} - artist name
    * {album} - album title
    */
-  filenameFormat = '{artist} {title}';
+  filenameFormat = '{artist} - {title}';
   /** Download path relative to chrome's default download path*/
   downloadPath = '';
   /**
